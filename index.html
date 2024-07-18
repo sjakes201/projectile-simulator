@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+
+<head>
+    <script src="https://pixijs.download/release/pixi.min.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        // Step 1: [Initialize framework: create the application helper and add its render target to the page]
+        const app = new PIXI.Application();
+        await app.init({ resizeTo: window, background: '#1099bb' })
+        document.body.appendChild(app.canvas);
+
+        let vw = window.innerWidth / 100;
+        let vh = window.innerHeight / 100;
+        const ticksPerFrame = 50; // How frequently to update frames
+
+        // Step 2: [Define helper functions]
+        const calc_horizontal_pos = (x0, v0, t) => {
+            return x0 + v0 * t;
+        }
+
+        const calc_vertical_pos = (y0, v0, t, g) => {
+            return y0 + v0 * t + 0.5 * g * (t * t);
+        }
+
+
+        // Step 3: [Define state, inputs, and stats-recording objects]
+        const state = {
+            // state is for the frequently updating information about the projectile
+            potentialEnergy: 0,
+            kineticEnergy: 0,
+            xVelocity: 0,
+            yVelocity: 0
+
+        }
+
+        const inputs = {
+            // inputs are for user inputs used in the physics calculations
+            initYVelocity: 0,
+            initXVelocity: 0,
+            angle: 0,
+            gravityConstant: -9.8
+        }
+
+        const stats = {
+            // stats are to hold record for 
+            maxHeight: 100,
+            maxSpeed: 45,
+        }
+
+        // Step 4: [Init sprites and input boxes]
+
+        // Init cannon
+        await PIXI.Assets.load('assets/images/cannon.png');
+        let cannon = PIXI.Sprite.from('assets/images/cannon.png');
+        cannon.anchor.set(0.5)
+        cannon.width = 8 * vw
+        cannon.height = 8 * vw
+        cannon.x = vw * 5;
+        cannon.y = vh * (100 - 8);
+        app.stage.addChild(cannon);
+
+        // Init cannonball
+        await PIXI.Assets.load('assets/images/cannonball.webp');
+        let projectile = PIXI.Sprite.from('assets/images/cannonball.webp');
+        projectile.anchor.set(0.5)
+        projectile.width = 5 * vw
+        projectile.height = 5 * vw
+        projectile.x = vw * 5;
+        projectile.y = vh * (100 - 10);
+        projectile.alpha = 0;
+        app.stage.addChild(projectile);
+
+        // Init ground
+        let ground = new PIXI.Graphics()
+            .rect(0, vh * 98, 100 * vw, 2 * vh)
+            .fill(0x000000)
+        app.stage.addChild(ground)
+
+
+        // Step 5: [Define runtime functions]
+        const setInputs = (v0, angle) => {
+            inputs.angle = angle
+            inputs.initYVelocity = v0 * Math.sin(angle * Math.PI / 180);
+            inputs.initXVelocity = v0 * Math.cos(angle * Math.PI / 180);
+            cannon.rotation = -angle * Math.PI / 180;
+        }
+
+        const shoot = () => {
+            projectile.alpha = 1;
+            state.movingX = true;
+            state.movingY = true;
+            let elapsed = 0.0;
+            app.ticker.add((ticker) => {
+                elapsed += ticker.deltaTime;
+
+                let new_x = vw * calc_horizontal_pos(5, inputs.initXVelocity, elapsed / ticksPerFrame)
+                if (new_x <= vw * 97.5 && new_x >= vw * 2.5) {
+                    projectile.x = new_x 
+                } else {
+                    projectile.alpha = 0.5
+                }
+                
+                let new_y = vh * (100 - Math.round(calc_vertical_pos(10, inputs.initYVelocity, elapsed / ticksPerFrame, inputs.gravityConstant)))
+                if (new_y < vh * 97.5 && new_y > vh * 2.5) {
+                    projectile.y = new_y
+                } else {
+                    projectile.alpha = 0.5
+                }
+
+            });
+        }
+
+        // Step 6: [Call runtime functions]
+        setInputs(40, 45)
+        setTimeout(shoot, 2000);
+
+
+    </script>
+</body>
+
+</html>
