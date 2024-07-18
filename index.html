@@ -43,7 +43,7 @@
                 // inputs are for user inputs used in the physics calculations
                 initYVelocity: 0,
                 initXVelocity: 0,
-                angle: 0,
+                angle: 45,
                 gravityConstant: -9.8,
                 mass: 10,
                 initialHeight: 0,
@@ -74,7 +74,7 @@
             projectile.width = 5 * vw
             projectile.height = 5 * vw
             projectile.x = vw * 5;
-            projectile.y = vh * (100 - 10 - inputs.initialHeight);
+            projectile.y = vh * (100 - 8.5 - inputs.initialHeight);
             projectile.alpha = 0;
             app.stage.addChild(projectile);
 
@@ -87,7 +87,7 @@
 
             // Step 5: [Define runtime functions]
             const setInputs = (velocity, angle, mass, height, gravity) => {
-                console.log(velocity, angle, mass, height, gravity)
+                height = height + 1 // minimum height 1
                 inputs.angle = angle
                 inputs.initYVelocity = velocity * Math.sin(angle * Math.PI / 180);
                 inputs.initXVelocity = velocity * Math.cos(angle * Math.PI / 180);
@@ -112,8 +112,9 @@
                 tickerFunction = (ticker) => {
                     if (state.moving) {
                         state.flightTime = elapsed; 
-                        document.getElementById('flightTime').innerText = 
+                        // document.getElementById('flightTime').innerText = 
                         elapsed += ticker.deltaTime / ticksPerFrame;
+                        document.getElementById('flight-time').innerText = elapsed.toFixed(2) + ' s';
 
                         let newX = vw * calc_horizontal_pos(5, inputs.initXVelocity, elapsed );
                         if (newX <= vw * 97.5 && newX >= vw * 2.5) {
@@ -122,13 +123,13 @@
                             projectile.alpha = 0.5;
                         }
 
-                        let newY = vh * (100 - Math.round(calc_vertical_pos(5, inputs.initYVelocity, elapsed , inputs.gravityConstant)));
+                        let newY = vh * (100 - Math.round(calc_vertical_pos(inputs.initialHeight + 8, inputs.initYVelocity, elapsed, inputs.gravityConstant)));
                         let height = (vh * 100) - newY;
                         if (height > stats.maxHeight) {
                             stats.maxHeight = height;
                         }
 
-                        if (newY < vh * 97.5 && newY >= vh * 2.5) {
+                        if (newY < vh * 97.5 && newY >= vh * 0.5) {
                             projectile.y = newY;
                         } else {
                             projectile.alpha = 0.5;
@@ -161,7 +162,9 @@
                 app.ticker.add(tickerFunction);
             };
 
-            // Step 6: [Event Listeners]
+            // Step 6: [Event Listeners and defaults]
+
+            setInputs(30, 45, 1, 0, 9.81);
 
             document.getElementById('setInputsBtn').addEventListener('click', () => {
                 const velocity = parseFloat(document.getElementById('speed').value);
@@ -176,12 +179,13 @@
                 shoot();
             })
 
+
         </script>
     </div>
 
     <div class="text-area">
         <div class="input-group">
-            <label for="velocity">Initial Height:</label>
+            <label for="height">Initial Height:</label>
             <input type="number" min="0" id="height" name="height" value="0.00">
         </div>
         <div class="input-group">
@@ -193,16 +197,16 @@
             <input type="number" min="0" id="angle" name="angle" value="45">
         </div>
         <div class="input-group">
-            <label for="angle">Mass:</label>
+            <label for="mass">Mass:</label>
             <input type="number" min="0" id="mass" name="mass" value="1.00">
         </div>
         <div class="input-group">
-            <label for="gravityConstant">Gravitational Acceleration:</label>
+            <label for="gravity">Gravitational Acceleration:</label>
             <input type="number" min="0" id="gravity" name="gravity" value="9.810">
         </div>
          <div class="input-group">
-            <label for="flightTime">Flight Time</label>
-            <span id="flighttime">0.00 s</span>
+            <label for="flight-time">Flight Time</label>
+            <span id="flight-time">0.00 s</span>
         </div>
 
         <button id="setInputsBtn">Set Inputs</button>
