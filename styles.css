@@ -1,0 +1,46 @@
+html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+
+}
+
+.simulation {
+    width: 80vw;
+    height: 100vh;
+}
+
+.text-area {
+    width: 20vw;
+    min-width: 20vw;
+    height: 100vh;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Add space between items */
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.text-area label {
+    margin-bottom: 5px; /* Space between label and input */
+}
+
+.text-area input {
+    margin-bottom: 10px; /* Space between input and next element */
+}
+
+.text-area button {
+    margin-top: 10px; /* Space above buttons */
+}
