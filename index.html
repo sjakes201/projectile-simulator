@@ -44,7 +44,7 @@
                 initYVelocity: 0,
                 initXVelocity: 0,
                 angle: 45,
-                gravityConstant: -9.8,
+                gravityConstant: -9.81,
                 mass: 10,
                 initialHeight: 0,
             }
@@ -93,10 +93,10 @@
                 inputs.initXVelocity = velocity * Math.cos(angle * Math.PI / 180);
                 inputs.initialHeight = height;
                 inputs.mass = mass;
+                inputs.gravityConstant = gravity;
                 cannon.rotation = -angle * Math.PI / 180;
                 cannon.y = vh * (100 - 4.8 - height); //update cannon height 
             }
-
             // Save reference to ticker function to cancel and reset when shoot is called again
             let tickerFunction;
             const shoot = () => {
@@ -110,6 +110,7 @@
                 let elapsed = 0.0;
 
                 tickerFunction = (ticker) => {
+                    console.log(inputs)
                     if (state.moving) {
                         state.flightTime = elapsed; 
                         // document.getElementById('flightTime').innerText = 
@@ -164,7 +165,7 @@
 
             // Step 6: [Event Listeners and defaults]
 
-            setInputs(30, 45, 1, 0, 9.81);
+            setInputs(30, 45, 1, 0, -9.81);
 
             document.getElementById('setInputsBtn').addEventListener('click', () => {
                 const velocity = parseFloat(document.getElementById('speed').value);
@@ -186,7 +187,7 @@
     <div class="text-area">
         <div class="input-group">
             <label for="height">Initial Height:</label>
-            <input type="number" min="0" id="height" name="height" value="0.00">
+            <input type="number" min="0" max="90" id="height" name="height" value="0.00">
         </div>
         <div class="input-group">
             <label for="speed"> Initial speed:</label>
@@ -194,7 +195,7 @@
         </div>
         <div class="input-group">
             <label for="angle">Angle:</label>
-            <input type="number" min="0" id="angle" name="angle" value="45">
+            <input type="number" min="359" max="359" id="angle" name="angle" value="45">
         </div>
         <div class="input-group">
             <label for="mass">Mass:</label>
@@ -202,7 +203,7 @@
         </div>
         <div class="input-group">
             <label for="gravity">Gravitational Acceleration:</label>
-            <input type="number" min="0" id="gravity" name="gravity" value="9.810">
+            <input type="number" min="0" id="gravity" name="gravity" value="-9.810">
         </div>
          <div class="input-group">
             <label for="flight-time">Flight Time</label>
