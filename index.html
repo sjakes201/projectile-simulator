@@ -21,54 +21,12 @@
             let vh = window.innerHeight / 100;
 
             // Step 2: [Define helper functions and physics constants]
-            const airDensity = 1.225; // kg/m^3
-            const dragCoefficient = 0.47; // for a sphere
-            const radius = 0.1; // meters (adjust as necessary)
-            const crossSectionalArea = Math.PI * radius * radius; // m^2
-
-
             const calc_horizontal_pos = (x0, v0, t) => x0 + v0 * t
             const calc_vertical_pos = (y0, v0, t, g) => y0 + v0 * t + 0.5 * g * (t * t);
 
-            const calc_position_with_air_resistance = (x0, y0, vx0, vy0, t, mass) => {
-                const dragForceX = 0.5 * airDensity * vx0 * vx0 * dragCoefficient * crossSectionalArea;
-                const dragForceY = 0.5 * airDensity * vy0 * vy0 * dragCoefficient * crossSectionalArea;
+            const calc_horizontal_velocity = (vx, t) => vx;
+            const calc_vertical_velocity = (vy, t, g) => vy + g * t
 
-                const accelX = -dragForceX / mass;
-                const accelY = -dragForceY / mass;
-
-                const newX = x0 + vx0 * t + 0.5 * accelX * t * t;
-                const newY = y0 + vy0 * t + 0.5 * (inputs.gravityConstant + accelY) * t * t;
-
-                return { x: newX, y: newY };
-            };
-
-            const calc_position_without_air_resistance = (x0, y0, vx0, vy0, t, g) => {
-                const newX = x0 + vx0 * t;
-                const newY = y0 + vy0 * t + 0.5 * g * t * t;
-
-                return { x: newX, y: newY };
-            };
-
-            const calc_horizontal_velocity = (v0, t, mass, withAirResistance) => {
-                if (withAirResistance) {
-                    const dragForce = 0.5 * airDensity * v0 * v0 * dragCoefficient * crossSectionalArea;
-                    const acceleration = -dragForce / mass;
-                    return v0 + acceleration * t;
-                } else {
-                    return v0;
-                }
-            }
-
-            const calc_vertical_velocity = (v0, t, g, mass, withAirResistance) => {
-                if (withAirResistance) {
-                    const dragForce = 0.5 * airDensity * v0 * v0 * dragCoefficient * crossSectionalArea;
-                    const acceleration = -dragForce / mass;
-                    return v0 + (g + acceleration) * t;
-                } else {
-                    return v0 + g * t;
-                }
-            }
 
             // Step 3: [Define state, inputs, and stats-recording objects]
             const state = {
@@ -80,6 +38,7 @@
                 yVelocity: 0,
                 speed: 0,
                 flightTime: 0,
+                distance: 5,
                 pathDots: []
             }
 
@@ -134,6 +93,10 @@
                 document.getElementById(id).innerText = value;
             }
 
+            const formatNumber = (number) => {
+                return number.toLocaleString('en-US', {maximumFractionDigits: 2, minimumFractionDigits: 2});
+            }
+
             const clearPathDots = () => {
                 state.pathDots.forEach(dot => app.stage.removeChild(dot));
                 state.pathDots = [];
@@ -173,8 +136,6 @@
                 }
                 clearPathDots();
 
-                const withAirResistance = document.getElementById('air-resistance').checked;
-
                 projectile.alpha = 1;
                 state.moving = true;
                 const ticksPerFrame = 25; // How frequently to update frames
@@ -184,24 +145,22 @@
                     if (state.moving) {
                         state.flightTime = elapsed;
                         elapsed += ticker.deltaTime / ticksPerFrame;
-                        setDocElementContents('flight-time', elapsed.toFixed(2) + ' s');
+                        setDocElementContents('flight-time', formatNumber(elapsed) + ' s');
 
-                        // Calculate new coordinates with or without air resistance
-                        let newX, newY = 0;
-                        if (withAirResistance) {
-                            let newCoords = calc_position_with_air_resistance(5, inputs.initialHeight + 8, inputs.initXVelocity, inputs.initYVelocity, elapsed, inputs.mass);
-                            newX = vw * Math.round(newCoords.x);
-                            newY = vh * Math.round(100 - newCoords.y);
-                        } else {
-                            newX = vw * calc_horizontal_pos(5, inputs.initXVelocity, elapsed);
-                            newY = vh * (100 - Math.round(calc_vertical_pos(inputs.initialHeight + 8, inputs.initYVelocity, elapsed, inputs.gravityConstant)))
-                        }
+                        // Calculate new coordinates 
+
+                        let newX = vw * calc_horizontal_pos(5, inputs.initXVelocity, elapsed);
+                        let newY = vh * (100 - Math.round(calc_vertical_pos(inputs.initialHeight + 8, inputs.initYVelocity, elapsed, inputs.gravityConstant)))
+
 
                         let height = (vh * 100) - newY;
+                        let distance = newX - (vw * 5);
+                        state.distance = distance;
+                        setDocElementContents('distance', formatNumber(distance) + ' m');
 
                         if (height > stats.maxHeight) {
                             stats.maxHeight = height;
-                            setDocElementContents('max-height', height.toFixed(2) + ' m');
+                            setDocElementContents('max-height', formatNumber(height) + ' m');
                         }
                         // Put tracking dot for projectile path
                         let dot = new PIXI.Graphics();
@@ -234,17 +193,17 @@
                             state.moving = false;
                         }
 
-                        const xVelocity = calc_horizontal_velocity(inputs.initXVelocity, elapsed, inputs.mass, withAirResistance);
-                        const yVelocity = calc_vertical_velocity(inputs.initYVelocity, elapsed, inputs.gravityConstant, inputs.mass, withAirResistance);
-                        setDocElementContents('x-velocity', xVelocity.toFixed(2) + ' m/s');
-                        setDocElementContents('y-velocity', yVelocity.toFixed(2) + ' m/s');
+                        const xVelocity = calc_horizontal_velocity(inputs.initXVelocity, elapsed);
+                        const yVelocity = calc_vertical_velocity(inputs.initYVelocity, elapsed, inputs.gravityConstant);
+                        setDocElementContents('x-velocity', formatNumber(xVelocity) + ' m/s');
+                        setDocElementContents('y-velocity', formatNumber(yVelocity) + ' m/s');
 
                         const speed = Math.sqrt(xVelocity * xVelocity + yVelocity * yVelocity);
-                        setDocElementContents('magnitude-velocity', speed.toFixed(2) + ' m/s');
+                        setDocElementContents('magnitude-velocity', formatNumber(speed) + ' m/s');
 
                         if (speed > stats.maxSpeed) {
                             stats.maxSpeed = speed;
-                            setDocElementContents('max-speed', speed.toFixed(2) + ' m/s');
+                            setDocElementContents('max-speed', formatNumber(speed) + ' m/s');
                         }
 
                         let PE = Math.round(inputs.mass * Math.abs(inputs.gravityConstant) * (height / vh));
@@ -275,7 +234,7 @@
 
             // Step 6: [Event Listeners and defaults]
 
-            setInputs(30, 45, 1, 0, -9.81);
+            setInputs(25, 45, 1, 0, -9.81);
 
             document.getElementById('setInputsBtn').addEventListener('click', () => {
                 const velocity = parseFloat(document.getElementById('speed').value);
@@ -297,30 +256,24 @@
     <div class="text-area">
 
         <div class="input-group">
-            <label for="height">Initial Height:</label>
+            <label for="height">Initial Height (meters):</label>
             <input type="number" min="0" max="90" id="height" name="height" value="0.00">
         </div>
         <div class="input-group">
-            <label for="speed"> Initial speed:</label>
-            <input type="number" min="0" id="speed" name="speed" value="30.00">
+            <label for="speed"> Initial speed (m/s):</label>
+            <input type="number" min="0" id="speed" name="speed" value="25.00">
         </div>
         <div class="input-group">
-            <label for="angle">Angle:</label>
+            <label for="angle">Angle (degrees):</label>
             <input type="number" min="-359" max="359" id="angle" name="angle" value="45">
         </div>
         <div class="input-group">
-            <label for="mass">Mass:</label>
+            <label for="mass">Mass (kg):</label>
             <input type="number" min="0" id="mass" name="mass" value="1.00">
         </div>
         <div class="input-group">
-            <label for="gravity">Gravitational Acceleration:</label>
+            <label for="gravity">Gravitational Acceleration (m/s^2):</label>
             <input type="number" id="gravity" name="gravity" value="-9.810">
-        </div>
-
-        <div class="input-group">
-            <label for="air-resistance">Enable Air Resistance:
-                <input type="checkbox" id="air-resistance" name="air-resistance">
-            </label>
         </div>
 
 
@@ -354,6 +307,8 @@
                 <label for="max-speed">Max Speed
                     <span id="max-speed">0.00 m/s</span>
                 </label>
+                <label for="distance">Distance
+                    <span id="distance">0.00 m</span>
             </div>
         </div>
 
