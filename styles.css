@@ -11,6 +11,15 @@ body {
 
 }
 
+button {
+    height: 30px;       
+    border-radius: 0px;
+    border-style: outset;
+    border-width: 2px;
+    margin-left: 10px;
+    font: bold 12px sans-serif;
+} 
+
 .simulation {
     width: 80vw;
     height: 100vh;
@@ -33,14 +42,41 @@ body {
     width: 100%;
 }
 
+.bold-label {
+    display: block; 
+    text-align: center;
+    font-weight: bold; 
+    margin: 0 auto; 
+    padding-top: 0.7em;
+    text-decoration: underline;
+}
+
+.bold {
+    font-weight: bold; 
+}
+
 .stats-box {
     border: 1px solid black;
     padding: 1.1vh 0.9vh 0.9vh 0.9vh;
     border-radius: 0.5vw;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    justify-items: center;
-    align-items: center;
+    grid-template-columns: 1fr;
+    justify-items: left;
+    align-items: left;
+}
+
+.stats-box .title-label {
+    width: 100%; 
+    text-align: center; 
+    padding-left: 0; 
+    font-weight: bold; 
+    margin-bottom: 0.5em; 
+}
+
+.stats-box label:not(.title-label) {
+    width: 100%;
+    text-align: left; 
+    padding-left: 1em; 
 }
 
 .text-area label {

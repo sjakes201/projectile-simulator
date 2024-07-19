@@ -102,6 +102,7 @@
             }
 
             const resetSimulation = () => {
+                clearPathDots();
                 state.moving = false;
                 projectile.x = vw * 5;
                 projectile.y = vh * (100 - 8.5 - inputs.initialHeight);
@@ -269,6 +270,11 @@
                 shoot();
             })
 
+            document.getElementById('reset').addEventListener('click', () => {
+                resetSimulation();
+            })
+
+
 
         </script>
     </div>
@@ -276,29 +282,32 @@
     <div class="text-area">
 
         <div class="input-group">
-            <label for="height">Initial Height (meters):</label>
+            <label for="height" style="font-weight: bold;">Initial Height (meters):</label>
             <input type="number" min="0" max="90" id="height" name="height" value="0.00">
         </div>
         <div class="input-group">
-            <label for="speed"> Initial speed (m/s):</label>
+            <label for="speed" style="font-weight: bold;"> Initial speed (m/s):</label>
             <input type="number" min="0" id="speed" name="speed" value="25.00">
         </div>
         <div class="input-group">
-            <label for="angle">Angle (degrees):</label>
+            <label for="angle" style="font-weight: bold;">Angle (degrees):</label>
             <input type="number" min="-359" max="359" id="angle" name="angle" value="45">
         </div>
         <div class="input-group">
-            <label for="mass">Mass (kg):</label>
+            <label for="mass" style="font-weight: bold;">Mass (kg):</label>
             <input type="number" min="0" id="mass" name="mass" value="1.00">
         </div>
         <div class="input-group">
-            <label for="gravity">Gravitational Acceleration (m/s^2):</label>
+            <label for="gravity" style="font-weight: bold;">Gravitational Acceleration (m/s^2):</label>
             <input type="number" id="gravity" name="gravity" value="-9.810">
         </div>
 
 
         <button id="setInputsBtn">Set Inputs</button>
         <button id="shootButton">Shoot</button>
+        <button id="reset">Reset</button>
+
+        <label for="calculation" class="bold-label">Calculations</label>
 
         <div class="net-force">
             <div class="force-diagram">
@@ -311,31 +320,33 @@
 
         <div class="input-group">
             <div class="stats-box">
-                <label for="y-velocity">Y Velocity
-                    <span id="y-velocity">0.00 m/s</span>
+                <label for="position>" class="title-label">Position</label>
+                <label for="distance">Horizontal Distance: 
+                    <span id="distance">0.00 m</span>
                 </label>
-                <label for="x-velocity">X Velocity
-                    <span id="x-velocity">0.00 m/s</span>
+                <label for="max-height">Max Height: 
+                    <span id="max-height">0.00 m</span>
                 </label>
-                <label for="magnitude-velocity">Speed
-                    <span id="magnitude-velocity">0.00 m/s</span>
-                </label>
-                <label for="flight-time">Flight Time
+                <label for="flight-time">Flight Time: 
                     <span id="flight-time">0.00 s</span>
-                </label>
             </div>
         </div>
 
         <div class="input-group">
             <div class="stats-box">
-                <label for="max-height">Max Height
-                    <span id="max-height">0.00 m</span>
+                <label for="Velocity" class="title-label">Velocity</label>
+                <label for="y-velocity">Y Velocity:
+                    <span id="y-velocity">0.00 m/s</span>
                 </label>
-                <label for="max-speed">Max Speed
+                <label for="x-velocity">X Velocity:
+                    <span id="x-velocity">0.00 m/s</span>
+                </label>
+                <label for="magnitude-velocity">Speed:
+                    <span id="magnitude-velocity">0.00 m/s</span>
+                </label>
+                <label for="max-speed">Max Speed:
                     <span id="max-speed">0.00 m/s</span>
                 </label>
-                <label for="distance">Distance
-                    <span id="distance">0.00 m</span>
             </div>
         </div>
 
