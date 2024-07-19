@@ -138,7 +138,7 @@
 
                 projectile.alpha = 1;
                 state.moving = true;
-                const ticksPerFrame = 25; // How frequently to update frames
+                const ticksPerFrame = 20; // How frequently to update frames
                 let elapsed = 0.0;
 
                 tickerFunction = (ticker) => {
@@ -153,10 +153,10 @@
                         let newY = vh * (100 - Math.round(calc_vertical_pos(inputs.initialHeight + 8, inputs.initYVelocity, elapsed, inputs.gravityConstant)))
 
 
-                        let height = (vh * 100) - newY;
+                        let height = ((vh * 100) - newY) / ticksPerFrame;
                         let distance = newX - (vw * 5);
-                        state.distance = distance;
-                        setDocElementContents('distance', formatNumber(distance) + ' m');
+                        state.distance = distance / ticksPerFrame;
+                        setDocElementContents('distance', formatNumber(distance / ticksPerFrame) + ' m');
 
                         if (height > stats.maxHeight) {
                             stats.maxHeight = height;
