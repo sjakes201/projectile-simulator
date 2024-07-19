@@ -21,6 +21,22 @@ button {
     cursor: pointer;
 } 
 
+#setInputsBtn {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+#shootButton {
+    background-color: #008CBA; /* Blue */
+    color: white;
+}
+
+#reset {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+
 .simulation {
     width: 80vw;
     height: 100vh;
