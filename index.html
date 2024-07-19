@@ -110,22 +110,15 @@
                 stats.maxHeight = 0;
                 stats.maxSpeed = 0;
                 setDocElementContents('max-height', 0 + ' m');
-                setDocElementContents('max-speed', 0 + ' m/s');
-                cannon.y = vh * (100 - 4.8); // reset to default height
+                setDocElementContents('max-speed', 0 + ' m/s');         
+                setInputs(25, 45, 1, 0, -9.81);
+
 
                 setDocElementContents('max-height', '0.00 m');
                 setDocElementContents('max-speed', '0.00 m/s');
                 setDocElementContents('flight-time', '0.00 s');
-                setDocElementContents('distance', '0.00 m');
-                // setDocElementContents('kinetic-energy', '0.00 J');
-                // setDocElementContents('potential-energy', '0.00 J');
-                // setDocElementContents('total-energy', '0.00 J');    
+                setDocElementContents('distance', '0.00 m');  
 
-                document.getElementById('height').value = 0.00;
-                document.getElementById('speed').value = 25.00;
-                document.getElementById('angle').value = 45;
-                document.getElementById('mass').value = 1.00;
-                document.getElementById('gravity').value = -9.81;
 
             }
 
