@@ -24,13 +24,12 @@ body {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Add space between items */
+    gap: 10px;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    margin-bottom: 10px;
     width: 100%;
 }
 
@@ -54,4 +53,32 @@ body {
 
 .text-area button {
     margin-top: 10px; /* Space above buttons */
+}
+
+.net-force {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    border: 1px solid black;
+    border-radius: 1vw;
+    padding: 1.5vh;
+}
+
+#arrow {
+    display: block;
+    margin: 0 auto;
+    height: 3vh;
+}
+
+#cannonball {
+    display: block;
+    margin: 0 auto;
+    height: 5vh;
+}
+
+#netForceValue {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
 }

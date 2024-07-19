@@ -32,8 +32,6 @@
             const state = {
                 // state is for the frequently updating information about the projectile
                 moving: false,
-                potentialEnergy: 0,
-                kineticEnergy: 0,
                 xVelocity: 0,
                 yVelocity: 0,
                 speed: 0,
@@ -55,7 +53,8 @@
             const stats = {
                 // stats are to hold records for max / highest etc along trajectory
                 maxHeight: 0,
-                maxSpeed: 0
+                maxSpeed: 0,
+                netForce: 0 //positive if upwards, negative if downwards
             }
 
             // Step 4: [Init sprites and input boxes]
@@ -94,7 +93,7 @@
             }
 
             const formatNumber = (number) => {
-                return number.toLocaleString('en-US', {maximumFractionDigits: 2, minimumFractionDigits: 2});
+                return number.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
             }
 
             const clearPathDots = () => {
@@ -123,8 +122,29 @@
                 inputs.initialHeight = height;
                 inputs.mass = mass;
                 inputs.gravityConstant = gravity;
+                stats.netForce = inputs.mass * inputs.gravityConstant;
                 cannon.rotation = -angle * Math.PI / 180;
                 cannon.y = vh * (100 - 4.8 - height); //update cannon height 
+
+                // Adjust force diagram
+                const netForce = stats.netForce; // Assuming stats.netForce is already defined
+
+                const arrow = document.getElementById('arrow');
+                const cannonball = document.getElementById('cannonball');
+                const netForceValue = document.getElementById('netForceValue');
+                const forceDiagramContainer = document.querySelector('.force-diagram');
+
+                if (netForce > 0) {
+                    // Position arrow above the cannonball
+                    arrow.style.transform = 'rotate(-180deg)';
+                    forceDiagramContainer.insertBefore(arrow, cannonball);
+                } else {
+                    
+                    forceDiagramContainer.insertBefore(cannonball, arrow);
+                }
+
+                // Set the net force value
+                netForceValue.textContent = "Net Force: " + Math.abs(netForce.toFixed(2)) + ' N';
             }
 
             // Save reference to ticker function to cancel and reset when shoot is called again
@@ -206,8 +226,8 @@
                             setDocElementContents('max-speed', formatNumber(speed) + ' m/s');
                         }
 
-                        let PE = Math.round(inputs.mass * Math.abs(inputs.gravityConstant) * (height / vh));
-                        let KE = Math.round(0.5 * inputs.mass * speed * speed);
+                        // let PE = Math.round(inputs.mass * Math.abs(inputs.gravityConstant) * (height));
+                        // let KE = Math.round(0.5 * inputs.mass * speed * speed);
 
                         state.xVelocity = xVelocity;
                         state.yVelocity = yVelocity;
@@ -280,6 +300,13 @@
         <button id="setInputsBtn">Set Inputs</button>
         <button id="shootButton">Shoot</button>
 
+        <div class="net-force">
+            <div class="force-diagram">
+                <img id="cannonball" src="assets/images/cannonball.webp" alt="cannonball">
+                <img id="arrow" src="assets/images/arrow.png" alt="arrow">
+            </div>
+            <span id="netForceValue"></span>
+        </div>
 
 
         <div class="input-group">
