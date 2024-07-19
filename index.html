@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="styles.css" type="text/css" />
     <script src="https://pixijs.download/release/pixi.min.js">
     </script>
-    
+
 </head>
 
 <body>
@@ -20,12 +20,55 @@
             let vw = 0.80 * (window.innerWidth / 100);
             let vh = window.innerHeight / 100;
 
-            // Step 2: [Define helper functions]
-            const calc_horizontal_pos = (x0, v0, t) => x0 + v0 * t
-            const calc_horizontal_velocity = (v0, t) => v0
-            const calc_vertical_pos = (y0, v0, t, g) => y0 + v0 * t + 0.5 * g * (t * t);
-            const calc_vertical_velocity = (v0, t, g) => v0 + g * t;
+            // Step 2: [Define helper functions and physics constants]
+            const airDensity = 1.225; // kg/m^3
+            const dragCoefficient = 0.47; // for a sphere
+            const radius = 0.1; // meters (adjust as necessary)
+            const crossSectionalArea = Math.PI * radius * radius; // m^2
 
+
+            const calc_horizontal_pos = (x0, v0, t) => x0 + v0 * t
+            const calc_vertical_pos = (y0, v0, t, g) => y0 + v0 * t + 0.5 * g * (t * t);
+
+            const calc_position_with_air_resistance = (x0, y0, vx0, vy0, t, mass) => {
+                const dragForceX = 0.5 * airDensity * vx0 * vx0 * dragCoefficient * crossSectionalArea;
+                const dragForceY = 0.5 * airDensity * vy0 * vy0 * dragCoefficient * crossSectionalArea;
+
+                const accelX = -dragForceX / mass;
+                const accelY = -dragForceY / mass;
+
+                const newX = x0 + vx0 * t + 0.5 * accelX * t * t;
+                const newY = y0 + vy0 * t + 0.5 * (inputs.gravityConstant + accelY) * t * t;
+
+                return { x: newX, y: newY };
+            };
+
+            const calc_position_without_air_resistance = (x0, y0, vx0, vy0, t, g) => {
+                const newX = x0 + vx0 * t;
+                const newY = y0 + vy0 * t + 0.5 * g * t * t;
+
+                return { x: newX, y: newY };
+            };
+
+            const calc_horizontal_velocity = (v0, t, mass, withAirResistance) => {
+                if (withAirResistance) {
+                    const dragForce = 0.5 * airDensity * v0 * v0 * dragCoefficient * crossSectionalArea;
+                    const acceleration = -dragForce / mass;
+                    return v0 + acceleration * t;
+                } else {
+                    return v0;
+                }
+            }
+
+            const calc_vertical_velocity = (v0, t, g, mass, withAirResistance) => {
+                if (withAirResistance) {
+                    const dragForce = 0.5 * airDensity * v0 * v0 * dragCoefficient * crossSectionalArea;
+                    const acceleration = -dragForce / mass;
+                    return v0 + (g + acceleration) * t;
+                } else {
+                    return v0 + g * t;
+                }
+            }
 
             // Step 3: [Define state, inputs, and stats-recording objects]
             const state = {
@@ -36,7 +79,8 @@
                 xVelocity: 0,
                 yVelocity: 0,
                 speed: 0,
-                flightTime: 0
+                flightTime: 0,
+                pathDots: []
             }
 
             const inputs = {
@@ -86,7 +130,29 @@
 
 
             // Step 5: [Define runtime functions]
+            const setDocElementContents = (id, value) => {
+                document.getElementById(id).innerText = value;
+            }
+
+            const clearPathDots = () => {
+                state.pathDots.forEach(dot => app.stage.removeChild(dot));
+                state.pathDots = [];
+            }
+
+            const resetSimulation = () => {
+                state.moving = false;
+                projectile.x = vw * 5;
+                projectile.y = vh * (100 - 8.5 - inputs.initialHeight);
+                projectile.alpha = 0;
+                stats.maxHeight = 0;
+                stats.maxSpeed = 0;
+                setDocElementContents('max-height', 0 + ' m');
+                setDocElementContents('max-speed', 0 + ' m/s');
+            }
+
             const setInputs = (velocity, angle, mass, height, gravity) => {
+                resetSimulation()
+                clearPathDots()
                 height = height + 1 // minimum height 1
                 inputs.angle = angle
                 inputs.initYVelocity = velocity * Math.sin(angle * Math.PI / 180);
@@ -97,35 +163,63 @@
                 cannon.rotation = -angle * Math.PI / 180;
                 cannon.y = vh * (100 - 4.8 - height); //update cannon height 
             }
+
             // Save reference to ticker function to cancel and reset when shoot is called again
             let tickerFunction;
             const shoot = () => {
+                resetSimulation()
                 if (tickerFunction) {
                     app.ticker.remove(tickerFunction);
                 }
+                clearPathDots();
+
+                const withAirResistance = document.getElementById('air-resistance').checked;
 
                 projectile.alpha = 1;
                 state.moving = true;
-                const ticksPerFrame = 50; // How frequently to update frames
+                const ticksPerFrame = 25; // How frequently to update frames
                 let elapsed = 0.0;
 
                 tickerFunction = (ticker) => {
-                    console.log(inputs)
                     if (state.moving) {
-                        state.flightTime = elapsed; 
-                        // document.getElementById('flightTime').innerText = 
+                        state.flightTime = elapsed;
                         elapsed += ticker.deltaTime / ticksPerFrame;
-                        document.getElementById('flight-time').innerText = elapsed.toFixed(2) + ' s';
+                        setDocElementContents('flight-time', elapsed.toFixed(2) + ' s');
 
-                        let newX = vw * calc_horizontal_pos(5, inputs.initXVelocity, elapsed );
+                        // Calculate new coordinates with or without air resistance
+                        let newX, newY = 0;
+                        if (withAirResistance) {
+                            let newCoords = calc_position_with_air_resistance(5, inputs.initialHeight + 8, inputs.initXVelocity, inputs.initYVelocity, elapsed, inputs.mass);
+                            newX = vw * Math.round(newCoords.x);
+                            newY = vh * Math.round(100 - newCoords.y);
+                        } else {
+                            newX = vw * calc_horizontal_pos(5, inputs.initXVelocity, elapsed);
+                            newY = vh * (100 - Math.round(calc_vertical_pos(inputs.initialHeight + 8, inputs.initYVelocity, elapsed, inputs.gravityConstant)))
+                        }
+
+                        let height = (vh * 100) - newY;
+
+                        if (height > stats.maxHeight) {
+                            stats.maxHeight = height;
+                            setDocElementContents('max-height', height.toFixed(2) + ' m');
+                        }
+                        // Put tracking dot for projectile path
+                        let dot = new PIXI.Graphics();
+                        dot.beginFill(0xFF0000); // Red color
+                        dot.drawCircle(0, 0, 2); // Radius of 2
+                        dot.endFill();
+                        dot.x = newX;
+                        dot.y = newY;
+                        app.stage.addChild(dot);
+                        state.pathDots.push(dot);
+
+                        // Check for out of screen and stopping conditions
                         if (newX <= vw * 97.5 && newX >= vw * 2.5) {
                             projectile.x = newX;
                         } else {
                             projectile.alpha = 0.5;
                         }
 
-                        let newY = vh * (100 - Math.round(calc_vertical_pos(inputs.initialHeight + 8, inputs.initYVelocity, elapsed, inputs.gravityConstant)));
-                        let height = (vh * 100) - newY;
                         if (height > stats.maxHeight) {
                             stats.maxHeight = height;
                         }
@@ -140,11 +234,19 @@
                             state.moving = false;
                         }
 
-                        const xVelocity = calc_horizontal_velocity(inputs.initXVelocity, elapsed / ticksPerFrame);
-                        const yVelocity = calc_vertical_velocity(inputs.initYVelocity, elapsed / ticksPerFrame, inputs.gravityConstant);
-                        const speed = Math.sqrt(xVelocity * xVelocity + yVelocity * yVelocity);
+                        const xVelocity = calc_horizontal_velocity(inputs.initXVelocity, elapsed, inputs.mass, withAirResistance);
+                        const yVelocity = calc_vertical_velocity(inputs.initYVelocity, elapsed, inputs.gravityConstant, inputs.mass, withAirResistance);
+                        setDocElementContents('x-velocity', xVelocity.toFixed(2) + ' m/s');
+                        setDocElementContents('y-velocity', yVelocity.toFixed(2) + ' m/s');
 
-                        
+                        const speed = Math.sqrt(xVelocity * xVelocity + yVelocity * yVelocity);
+                        setDocElementContents('magnitude-velocity', speed.toFixed(2) + ' m/s');
+
+                        if (speed > stats.maxSpeed) {
+                            stats.maxSpeed = speed;
+                            setDocElementContents('max-speed', speed.toFixed(2) + ' m/s');
+                        }
+
                         let PE = Math.round(inputs.mass * Math.abs(inputs.gravityConstant) * (height / vh));
                         let KE = Math.round(0.5 * inputs.mass * speed * speed);
 
@@ -155,13 +257,21 @@
                         if (speed > stats.maxSpeed) {
                             stats.maxSpeed = speed;
                         }
+                    } else {
+                        app.ticker.remove(tickerFunction);
+                        state.xVelocity = 0;
+                        state.yVelocity = 0;
+                        state.speed = 0;
+                        setDocElementContents('x-velocity', 0 + ' m/s');
+                        setDocElementContents('y-velocity', 0 + ' m/s');
+                        setDocElementContents('magnitude-velocity', 0 + ' m/s');
+
                     }
-
-
                 };
 
                 app.ticker.add(tickerFunction);
             };
+
 
             // Step 6: [Event Listeners and defaults]
 
@@ -185,17 +295,18 @@
     </div>
 
     <div class="text-area">
+
         <div class="input-group">
             <label for="height">Initial Height:</label>
             <input type="number" min="0" max="90" id="height" name="height" value="0.00">
         </div>
         <div class="input-group">
             <label for="speed"> Initial speed:</label>
-            <input for="number" min="0" id="speed" name="speed" value="30.00">
+            <input type="number" min="0" id="speed" name="speed" value="30.00">
         </div>
         <div class="input-group">
             <label for="angle">Angle:</label>
-            <input type="number" min="359" max="359" id="angle" name="angle" value="45">
+            <input type="number" min="-359" max="359" id="angle" name="angle" value="45">
         </div>
         <div class="input-group">
             <label for="mass">Mass:</label>
@@ -203,15 +314,50 @@
         </div>
         <div class="input-group">
             <label for="gravity">Gravitational Acceleration:</label>
-            <input type="number" min="0" id="gravity" name="gravity" value="-9.810">
+            <input type="number" id="gravity" name="gravity" value="-9.810">
         </div>
-         <div class="input-group">
-            <label for="flight-time">Flight Time</label>
-            <span id="flight-time">0.00 s</span>
+
+        <div class="input-group">
+            <label for="air-resistance">Enable Air Resistance:
+                <input type="checkbox" id="air-resistance" name="air-resistance">
+            </label>
         </div>
+
 
         <button id="setInputsBtn">Set Inputs</button>
         <button id="shootButton">Shoot</button>
+
+
+
+        <div class="input-group">
+            <div class="stats-box">
+                <label for="y-velocity">Y Velocity
+                    <span id="y-velocity">0.00 m/s</span>
+                </label>
+                <label for="x-velocity">X Velocity
+                    <span id="x-velocity">0.00 m/s</span>
+                </label>
+                <label for="magnitude-velocity">Speed
+                    <span id="magnitude-velocity">0.00 m/s</span>
+                </label>
+                <label for="flight-time">Flight Time
+                    <span id="flight-time">0.00 s</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="stats-box">
+                <label for="max-height">Max Height
+                    <span id="max-height">0.00 m</span>
+                </label>
+                <label for="max-speed">Max Speed
+                    <span id="max-speed">0.00 m/s</span>
+                </label>
+            </div>
+        </div>
+
+
     </div>
 
 </body>
