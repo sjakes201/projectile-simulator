@@ -162,9 +162,6 @@
 
                 // Set the net force value
                 netForceValue.textContent = "Net Force: " + Math.abs(netForce.toFixed(2)) + ' N';
-
-                setDocElementContents('acceleration-calc', formatNumber(gravity) + ' m/s^2');
-                setDocElementContents('force-calc', formatNumber(gravity) + ' N');
             }
 
             // const calculateKineticEnergy = (mass, speed) => 0.5 * mass * speed * speed;
@@ -315,6 +312,8 @@
 
     <div class="text-area">
 
+        <label for="parameters" class="bold-label">Parameters</label>
+
         <div class="input-group">
             <label for="height" style="font-weight: bold;">Initial Height (meters):</label>
             <input type="number" min="0" max="90" id="height" name="height" value="0.00">
@@ -384,39 +383,6 @@
             </div>
         </div>
 
-        <div class="input-group">
-            <div class="stats-box">
-                <label for="acceleration" class="title-label">Acceleration</label>
-                <label for="acceleration-calc">Acceleration:
-                    <span id="acceleration-calc">0.00 m/s^2</span>
-                </label>
-            </div>
-        </div>
-
-        <div class="input-group">
-            <div class="stats-box">
-                <label for="force" class="title-label">Force</label>
-                <label for="force-calc">Force:
-                    <span id="force-calc">0.00 N</span>
-                </label>
-            </div>
-        </div>
-
-        <!-- wasn't able to get to work -->
-        <div class="input-group">
-            <div class="stats-box">
-                <label for="energy" class="title-label">Energy</label>
-                <label for="kinetic-energy">Kinetic Energy:
-                    <span id="energy-calc">0.00 J</span>
-                </label>
-                <label for="potential-energy">Potential Energy:
-                    <span id="energy-calc">0.00 J</span>
-                </label>
-                <label for="total-energy">Total Energy:
-                    <span id="energy-calc">0.00 J</span>
-                </label>
-            </div>
-        </div> 
 
 
     </div>
