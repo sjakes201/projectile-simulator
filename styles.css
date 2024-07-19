@@ -51,6 +51,7 @@ button {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow-y: auto;
 }
 
 .input-group {

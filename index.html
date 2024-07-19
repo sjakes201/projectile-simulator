@@ -117,13 +117,16 @@
                 setDocElementContents('max-speed', '0.00 m/s');
                 setDocElementContents('flight-time', '0.00 s');
                 setDocElementContents('distance', '0.00 m');
+                setDocElementContents('kinetic-energy', '0.00 J');
+                setDocElementContents('potential-energy', '0.00 J');
+                setDocElementContents('total-energy', '0.00 J');    
 
-                // setInputs(25, 45, 1, 0, -9.81);
                 document.getElementById('height').value = 0.00;
                 document.getElementById('speed').value = 25.00;
                 document.getElementById('angle').value = 45;
                 document.getElementById('mass').value = 1.00;
                 document.getElementById('gravity').value = -9.81;
+
             }
 
             const setInputs = (velocity, angle, mass, height, gravity) => {
@@ -159,7 +162,17 @@
 
                 // Set the net force value
                 netForceValue.textContent = "Net Force: " + Math.abs(netForce.toFixed(2)) + ' N';
+
+                setDocElementContents('acceleration-calc', formatNumber(gravity) + ' m/s^2');
+                setDocElementContents('force-calc', formatNumber(gravity) + ' N');
             }
+
+            // const calculateKineticEnergy = (mass, speed) => 0.5 * mass * speed * speed;
+
+            // const calculatePotentialEnergy = (mass, height, gravity) => mass * Math.abs(gravity) * height;
+
+            // const calculateTotalEnergy = (kineticEnergy, potentialEnergy) => kineticEnergy + potentialEnergy;
+
 
             // Save reference to ticker function to cancel and reset when shoot is called again
             let tickerFunction;
@@ -242,6 +255,14 @@
 
                         // let PE = Math.round(inputs.mass * Math.abs(inputs.gravityConstant) * (height));
                         // let KE = Math.round(0.5 * inputs.mass * speed * speed);
+
+                        // const kineticEnergy = calculateKineticEnergy(inputs.mass, speed);
+                        // const potentialEnergy = calculatePotentialEnergy(inputs.mass, height, inputs.gravityConstant);
+                        // const totalEnergy = calculateTotalEnergy(kineticEnergy, potentialEnergy);
+
+                        // setDocElementContents('kinetic-energy', formatNumber(calculateKineticEnergy) + ' J');
+                        // setDocElementContents('potential-energy', formatNumber(potentialEnergy) + ' J');
+                        // setDocElementContents('total-energy', formatNumber(totalEnergy) + ' J');
 
                         state.xVelocity = xVelocity;
                         state.yVelocity = yVelocity;
@@ -359,6 +380,39 @@
                 </label>
                 <label for="max-speed">Max Speed:
                     <span id="max-speed">0.00 m/s</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="stats-box">
+                <label for="acceleration" class="title-label">Acceleration</label>
+                <label for="acceleration-calc">Acceleration:
+                    <span id="acceleration-calc">0.00 m/s^2</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="stats-box">
+                <label for="force" class="title-label">Force</label>
+                <label for="force-calc">Force:
+                    <span id="force-calc">0.00 N</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="stats-box">
+                <label for="energy" class="title-label">Energy</label>
+                <label for="kinetic-energy">Kinetic Energy:
+                    <span id="energy-calc">0.00 J</span>
+                </label>
+                <label for="potential-energy">Potential Energy:
+                    <span id="energy-calc">0.00 J</span>
+                </label>
+                <label for="total-energy">Total Energy:
+                    <span id="energy-calc">0.00 J</span>
                 </label>
             </div>
         </div>
